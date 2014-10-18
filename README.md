@@ -1,4 +1,4 @@
-PIXI.InputObject
+PIXI.Input
 ================
 
 Canvas based input elements rendered on a PIXI stage.
