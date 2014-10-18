@@ -2,6 +2,7 @@ PIXI.Input
 ================
 
 Canvas based input elements rendered on a PIXI stage.
+DEMO: http://mokgames.com/playground/pixi.dom/
 
 #### How to use ####
 Simply load the pixi.input.js file after your pixi.js file.
@@ -151,4 +152,6 @@ TODO:
 * Radio Buttons
 * Avoiding to recreate textures if input's use the exact same background.
 * bower/grunt/etc, all the things we need in this rep.
+* Bitmap Font support
+* Typescript definition
 * And much more. I will post my thoughts on this later.
