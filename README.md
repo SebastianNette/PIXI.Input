@@ -2,6 +2,7 @@ PIXI.Input
 ================
 
 Canvas based input elements rendered on a PIXI stage.
+
 DEMO: http://mokgames.com/playground/pixi.dom/
 
 #### How to use ####
@@ -64,13 +65,13 @@ var options = {
     selectionColor: "rgba(179, 212, 253, 0.8)",
     value: "",
     type: "text",
-    onsubmit: noop,
-    onkeydown: noop,
-    onkeyup: noop,
-    onfocus: noop,
-    onblur: noop,
-    onmousedown: noop,
-    onmouseup: noop,
+    onsubmit: function() {},
+    onkeydown: function() {},
+    onkeyup: function() {},
+    onfocus: function() {},
+    onblur: function() {},
+    onmousedown: function() {},
+    onmouseup: function() {},
     width: 170,
     height: null,
     padding: 5,
