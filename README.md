@@ -1,3 +1,8 @@
+Changelog
+================
+[19.10.2014] Added Bitmap support.
+
+
 PIXI.Input
 ================
 
@@ -132,6 +137,15 @@ var button = new PIXI.Button({
       // do stuff
     }
 });
+```
+
+#### Use Bitmap fonts! ####
+```javascript
+var input = new PIXI.Input({
+  type: "text",
+  text: { bitmap: true, font: "35px Desyrel" }
+});
+stage.addChild(input);
 ```
 
 #### Contribution ####

@@ -1,9 +1,35 @@
 /**
- * PIXI Input Element v1.0.0
+* The MIT License (MIT)
+
+* Copyright (c) 2014 Sebastian Nette
+
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+*
+* 
+*
+*/
+
+/**
+ * PIXI Input Element v1.0.1
  * Copyright (c) 2014, Sebastian Nette
  * http://www.mokgames.com/
  */
-
 (function(undefined) {
 
     // detect pixi version
@@ -161,6 +187,11 @@
     // get font height
     function getFontHeight( obj )
     {
+        if(obj._isBitmapFont)
+        {
+            return obj._lineHeight;
+        }
+
         if(isOldPIXI || obj.determineFontHeight)
         {
             return obj.determineFontHeight('font: ' + obj.style.font  + ';') + obj.style.strokeThickness;
@@ -824,14 +855,33 @@
         this.data.clipPos = [0, 0];
         this.data.cursorPos = 0;
         this.cursorTimer = 0;
-        this.textCache = PIXI.InputObject.getTextCache(this);
 
         // set value
         this.data.value = (this.data.value || this.data.placeholder || "") + "";
         this.currText = this.data.value;
 
-        // sprites
-        this.text = new PIXI.Text( this.data.value, this.data.text );
+        // text sprite
+        if(!this.data.text.bitmap)
+        {
+            this.text = new PIXI.Text( this.data.value, this.data.text );
+            this.textCache = PIXI.InputObject.getTextCache(this);
+        }
+        else
+        {
+            this.text = new PIXI.BitmapText( this.data.value || "Temp", this.data.text );
+            this.text._isBitmapFont = true;
+            this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+            this.text._scale = this.text.fontSize / this.text._data.size;
+            this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+
+            // ugly but we need to define some text to get the correct line height
+            if(!this.data.value)
+            {
+                this._textNeedsUpdate = true;
+            }
+        }
+
+        // caret/selection sprites
         this.cursor = new PIXI.Text("|", this.data.text );
         this.cursor.visible = false;
         this.selection = new PIXI.Sprite( getSelectionTexture( this.data.selectionColor ) );
@@ -1150,7 +1200,18 @@
                     this.text.setStyle(this.data.text);
                     this.cursor.setStyle(this.data.text);
                     this.cursor.updateText();
-                    this.textCache = PIXI.InputObject.getTextCache(this);
+
+                    if(!this.text._isBitmapFont)
+                    {
+                        this.textCache = PIXI.InputObject.getTextCache(this);
+                    }
+                    else
+                    {
+                        this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+                        this.text._scale = this.text.fontSize / this.text._data.size;
+                        this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+                    }
+
                     this._textStyleNeedsUpdate = false;
                 }
 
@@ -1242,7 +1303,7 @@
 
             var textWidth = this.textWidth(value),
                 textLength = value.length,
-                width = (this.data.width - this.data.padding),
+                width = (this.data.width - 2*this.data.padding),
                 oValue = value;
 
             if(full && value !== this.data.placeholder)
@@ -1285,23 +1346,45 @@
 
             if(textWidth > width)
             {
-                var cache = this.textCache, character = "";
-                while(textWidth > width)
+                if(!this.text._isBitmapFont)
                 {
-                    if(full && this.data.cursorPos > this.data.clipPos[1])
+                    var cache = this.textCache, 
+                        character = "";
+
+                    while(textWidth > width)
                     {
-                        character = value[0];
-                        cache[character] = cache[character] || this.textWidth(character)
-                        textWidth -= cache[character];
-                        value = value.substr(1, --textLength);
-                        start++;
+                        if(full && this.data.cursorPos > this.data.clipPos[1])
+                        {
+                            character = value[0];
+                            cache[character] = cache[character] || this.textWidth(character)
+                            textWidth -= cache[character];
+                            value = value.substr(1, --textLength);
+                            start++;
+                        }
+                        else
+                        {
+                            character = value[--textLength];
+                            cache[character] = cache[character] || this.textWidth(character);
+                            textWidth -= cache[character];
+                            value = value.substr(0, textLength);
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    while(textWidth > width)
                     {
-                        character = value[--textLength];
-                        cache[character] = cache[character] || this.textWidth(character)
-                        textWidth -= cache[character];
-                        value = value.substr(0, textLength);
+                        if(full && this.data.cursorPos > this.data.clipPos[1])
+                        {
+                            textWidth -= this.textWidth(value[0]);
+                            value = value.substr(1, --textLength);
+                            start++;
+                        }
+                        else
+                        {
+                            textWidth -= this.textWidth(value[--textLength]);
+                            value = value.substr(0, textLength);
+                        }
                     }
                 }
             }
@@ -1342,10 +1425,37 @@
 
         textWidth: function(text)
         {
-            var ctx = this.context;
-            ctx.font = this.text.style.font;
-            ctx.textAlign = 'left';
-            return ctx.measureText(text || "").width;
+            if(!this.text._isBitmapFont)
+            {
+                var ctx = this.context;
+                ctx.font = this.text.style.font;
+                ctx.textAlign = 'left';
+                return ctx.measureText(text || "").width;
+            }
+            else
+            {
+                var prevCharCode = null;
+                var width = 0;
+                var data = this.text._data;
+                for(var i = 0; i < text.length; i++)
+                {
+                    var charCode = text.charCodeAt(i);
+                    var charData = data.chars[charCode];
+
+                    if(!charData) continue;
+
+                    if(prevCharCode && charData.kerning[prevCharCode])
+                    {
+                        width += charData.kerning[prevCharCode];
+                    }
+
+                    width += charData.xAdvance;
+
+                    prevCharCode = charCode;
+                }
+
+                return width * this.text._scale;
+            }
         },
 
         mousePos: function(e)
@@ -1409,8 +1519,15 @@
 
         destroy: function()
         {
-            PIXI.InputObject.getTextCache(this, true);
-            this.text.destroy(true);
+            if(!this.text._isBitmapFont)
+            {
+                PIXI.InputObject.getTextCache(this, true);
+                this.text.destroy(true);
+            }
+            else
+            {
+                this.text = null;
+            }
             this.cursor.destroy(true);
             PIXI.InputObject.prototype.destroy.call(this);
         }
@@ -1447,8 +1564,25 @@
         this.data = extend(this.data, inputDefaults);
         this.data = extend(this.data, styleDefaults);
 
-        // sprites
-        this.text = new PIXI.Text( this.data.value, this.data.text );
+        // text sprite
+        if(!this.data.text.bitmap)
+        {
+            this.text = new PIXI.Text( this.data.value, this.data.text );
+        }
+        else
+        {
+            this.text = new PIXI.BitmapText( this.data.value || "Temp", this.data.text );
+            this.text._isBitmapFont = true;
+            this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+            this.text._scale = this.text.fontSize / this.text._data.size;
+            this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+
+            // ugly but we need to define some text to get the correct line height
+            if(!this.data.value)
+            {
+                this._textNeedsUpdate = true;
+            }
+        }
 
         // get height
         this.data.height = this.data.height || getFontHeight(this.text);
@@ -1518,6 +1652,14 @@
                 if(this._textStyleNeedsUpdate)
                 {
                     this.text.setStyle(this.data.text);
+
+                    if(this.text._isBitmapFont)
+                    {
+                        this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+                        this.text._scale = this.text.fontSize / this.text._data.size;
+                        this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+                    }
+
                     this._textStyleNeedsUpdate = false;
                 }
 
@@ -1574,7 +1716,14 @@
 
         destroy: function()
         {
-            this.text.destroy(true);
+            if(this.text._isBitmapFont)
+            {
+                this.text.destroy(true);
+            }
+            else
+            {
+                this.text = null;
+            }
             PIXI.InputObject.prototype.destroy.call(this);
         }
 
@@ -1612,8 +1761,21 @@
         this.lineHeight = 20;
         this.options = [];
 
+        // text sprite
+        if(!this.data.text.bitmap)
+        {
+            this.text = new PIXI.Text( "", this.data.text );
+        }
+        else
+        {
+            this.text = new PIXI.BitmapText( "Temp", this.data.text );
+            this.text._isBitmapFont = true;
+            this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+            this.text._scale = this.text.fontSize / this.text._data.size;
+            this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+        }
+
         // sprites
-        this.text = new PIXI.Text( "" , this.data.text );
         this.selection = new PIXI.Sprite( getSelectionTexture( this.data.selectionColor ) );
         this.selection.visible = false;
         this.menu = new PIXI.Sprite( getSelectionTexture( this.data.backgroundColor ) );
@@ -1658,16 +1820,31 @@
             });
             text += this.data.options[index] + "\n";
         }
-        this.optiontexts = new PIXI.Text( text, this.data.optionText || { font: "14px arial" } );
-        this.optiontexts.visible = false;
-        this.addChild(this.optiontexts);
+
+        // options text sprite
+        if(!this.data.optionText || !this.data.optionText.bitmap)
+        {
+            this.optionstext = new PIXI.Text( text, this.data.optionText || { font: "14px arial" } );
+            this.lineHeight = (this.optionstext.height / (this.options.length+1) - this.optionstext.style.strokeThickness / 2) | 0;
+        }
+        else
+        {
+            this.optionstext = new PIXI.BitmapText( text, this.data.optionText );
+            this.optionstext._isBitmapFont = true;
+            this.optionstext._data = PIXI.BitmapText.fonts[this.optionstext.fontName];
+            this.optionstext._scale = this.optionstext.fontSize / this.optionstext._data.size;
+            this.optionstext._lineHeight = this.optionstext._data.lineHeight * this.optionstext._scale;
+            this.lineHeight = this.optionstext._lineHeight;
+        }
+        this.optionstext.visible = false;
+        this.addChild(this.optionstext);
 
         // set height
-        this.lineHeight = (this.optiontexts.height / (this.options.length+1) - this.optiontexts.style.strokeThickness / 2) | 0;
         this.menu.height = this.lineHeight * this.options.length - 1;
 
         // interactive menu
         this.menu.interactive = true;
+
         this.menu.mousedown = this.menu.touchstart = function(e)
         {
             if(e.originalEvent.which === 2 || e.originalEvent.which === 3)
@@ -1679,6 +1856,7 @@
             this.selectedIndex = this.getIndexByLocalPosition(e);
             this.updateText();
         }.bind(this);
+
         this.menu.mousemove = this.menu.touchmove = function(e)
         {
             if(this.menu.stage && this.menu.stage.interactionManager.hitTest(this.menu, e))
@@ -1856,7 +2034,7 @@
         {
             this.menu.visible = show;
             this.selection.visible = false;
-            this.optiontexts.visible = false;
+            this.optionstext.visible = false;
             if(!show) return;
 
             this.menu.x = this.data.textboxLeft;
@@ -1891,9 +2069,9 @@
             this.menu.startY = this.menu.y - this.menu.height * this.menu.anchor.y;
             this.menu.selectedIndex = null;
 
-            this.optiontexts.y = this.menu.startY;
-            this.optiontexts.x = 5;
-            this.optiontexts.visible = true;
+            this.optionstext.y = this.menu.startY;
+            this.optionstext.x = 5;
+            this.optionstext.visible = true;
 
             if(this.value)
             {
@@ -1916,6 +2094,14 @@
                 if(this._textStyleNeedsUpdate)
                 {
                     this.text.setStyle(this.data.text);
+
+                    if(this.text._isBitmapFont)
+                    {
+                        this.text._data = PIXI.BitmapText.fonts[this.text.fontName];
+                        this.text._scale = this.text.fontSize / this.text._data.size;
+                        this.text._lineHeight = this.text._data.lineHeight * this.text._scale;
+                    }
+
                     this._textStyleNeedsUpdate = false;
                 }
 
@@ -1988,7 +2174,22 @@
 
         destroy: function()
         {
-            this.text.destroy(true);
+            if(!this.text._isBitmapFont)
+            {
+                this.text.destroy(true);
+            }
+            else
+            {
+                this.text = null;
+            }
+            if(!this.optionstext._isBitmapFont)
+            {
+                this.optionstext._isBitmapFont.destroy(true);
+            }
+            else
+            {
+                this.optionstext = null;
+            }
             PIXI.InputObject.prototype.destroy.call(this);
         }
 
