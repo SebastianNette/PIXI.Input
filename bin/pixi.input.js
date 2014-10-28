@@ -198,7 +198,7 @@
         }
         else
         {
-            return parseInt(obj.getFontProperties(obj.style.font).fontSize, 10) + obj.style.strokeThickness;
+            return parseInt(obj.determineFontProperties(obj.style.font).fontSize, 10) + obj.style.strokeThickness;
         }
     };
 
