@@ -1,0 +1,19 @@
+{
+  "name": "pixi.input.js",
+  "version": "1.0.1",
+  "homepage": "https://github.com/SebastianNette/PIXI.Input",
+  "license": "MIT",
+  "main": "bin/pixi.input.js",
+  
+  "dependencies": {
+    "pixi.js": "~2.0.0"
+  },
+
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
