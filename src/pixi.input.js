@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 *
-* 
+*
 *
 */
 
@@ -45,7 +45,7 @@
     var blinkInterval = 300;
 
     // empty function
-    function noop() 
+    function noop()
     {
     };
 
@@ -139,13 +139,13 @@
     function getSelectionTexture(color)
     {
         var texture = textures[color];
-        
+
         if(!texture)
         {
             var can = document.createElement("canvas");
                 can.width = 2;
                 can.height = 2;
-            
+
             var ctx = can.getContext("2d");
                 ctx.fillStyle = color;
                 ctx.fillRect(0,0,2,2);
@@ -160,7 +160,7 @@
     // mixin
     function extend(dest, source, force)
     {
-        for(var prop in source) 
+        for(var prop in source)
         {
             if(force)
             {
@@ -198,7 +198,7 @@
         }
         else
         {
-            return parseInt(obj.getFontProperties(obj.style.font).fontSize, 10) + obj.style.strokeThickness;
+            return parseInt(obj.determineFontProperties(obj.style.font).fontSize, 10) + obj.style.strokeThickness;
         }
     };
 
@@ -252,8 +252,8 @@
                 blur: parseInt(data[2], 10),
                 color: data[3]
             };
-        } 
-        else 
+        }
+        else
         {
             shadow = { x: 0, y: 0, blur: 0, color: "" };
         }
@@ -265,8 +265,8 @@
             {
                 opts.shadowLeft = Math.abs(shadow.x) + shadow.blur;
                 opts.shadowRight = shadow.blur + shadow.x;
-            } 
-            else 
+            }
+            else
             {
                 opts.shadowLeft = Math.abs(shadow.blur - shadow.x);
                 opts.shadowRight = shadow.blur + shadow.x;
@@ -446,20 +446,20 @@
 
             // create a clipping mask on the main canvas
             roundedRect(
-                ctx, 
-                borderWidth + shadowLeft, borderWidth + shadowTop, 
-                width - borderWidth * 2 - shadowWidth, 
-                height - borderWidth * 2 - shadowHeight, 
+                ctx,
+                borderWidth + shadowLeft, borderWidth + shadowTop,
+                width - borderWidth * 2 - shadowWidth,
+                height - borderWidth * 2 - shadowHeight,
                 borderRadius
             );
             ctx.clip();
 
             // draw the inner-shadow from the off-DOM canvas
             ctx.drawImage(
-                shadowCanvas, 
-                0, 0, 
-                shadowCanvas.width, shadowCanvas.height, 
-                borderWidth + shadowLeft, borderWidth + shadowTop, 
+                shadowCanvas,
+                0, 0,
+                shadowCanvas.width, shadowCanvas.height,
+                borderWidth + shadowLeft, borderWidth + shadowTop,
                 shadowCanvas.width, shadowCanvas.height
             );
         }
@@ -496,21 +496,21 @@
                 input.style.zIndex = 10;
 
                 // add blur handler
-                input.addEventListener("blur", function() 
+                input.addEventListener("blur", function()
                 {
-                    if(PIXI.InputObject.currentInput) 
+                    if(PIXI.InputObject.currentInput)
                     {
                         PIXI.InputObject.currentInput.onMouseUpOutside();
                     }
                 }, false);
 
                 // on key down
-                input.addEventListener('keydown', function(e) 
+                input.addEventListener('keydown', function(e)
                 {
-                    if(PIXI.InputObject.currentInput) 
+                    if(PIXI.InputObject.currentInput)
                     {
                         e = e || window.event;
-                        if (PIXI.InputObject.currentInput.data.hasFocus) 
+                        if (PIXI.InputObject.currentInput.data.hasFocus)
                         {
                             PIXI.InputObject.currentInput.onKeyDown(e);
                         }
@@ -518,12 +518,12 @@
                 });
 
                 // on key up
-                input.addEventListener('keyup', function(e) 
+                input.addEventListener('keyup', function(e)
                 {
-                    if(PIXI.InputObject.currentInput) 
+                    if(PIXI.InputObject.currentInput)
                     {
                         e = e || window.event;
-                        if (PIXI.InputObject.currentInput.data.hasFocus) 
+                        if (PIXI.InputObject.currentInput.data.hasFocus)
                         {
                             PIXI.InputObject.currentInput.onKeyUp(e);
                         }
@@ -551,10 +551,10 @@
     // extend prototype
     extend(PIXI.InputObject.prototype, {
 
-        updateData: function(obj) 
+        updateData: function(obj)
         {
             // check if the text style changed
-            if(obj.hasOwnProperty("text")) 
+            if(obj.hasOwnProperty("text"))
             {
                 this._textStyleNeedsUpdate = true;
             }
@@ -563,23 +563,23 @@
             this.data.dirty = true;
 
             // check if the text needs to be updated
-            if(obj.hasOwnProperty("value") || this._textStyleNeedsUpdate) 
+            if(obj.hasOwnProperty("value") || this._textStyleNeedsUpdate)
             {
                 this._textNeedsUpdate = true;
             }
         },
 
-        focus: function() 
+        focus: function()
         {
 
             // is already current input
-            if(PIXI.InputObject.currentInput === this) 
+            if(PIXI.InputObject.currentInput === this)
             {
                 return;
             }
 
             // drop focus
-            if(PIXI.InputObject.currentInput) 
+            if(PIXI.InputObject.currentInput)
             {
                 PIXI.InputObject.currentInput.blur();
             }
@@ -592,7 +592,7 @@
             this.data.onfocus();
 
             // is read only
-            if(this.data.readonly) 
+            if(this.data.readonly)
             {
                 return;
             }
@@ -602,9 +602,9 @@
             this.hiddenInput.focus();
         },
 
-        blur: function() 
+        blur: function()
         {
-            if(PIXI.InputObject.currentInput === this) 
+            if(PIXI.InputObject.currentInput === this)
             {
                 PIXI.InputObject.currentInput = null;
                 this.data.hasFocus = false;
@@ -616,7 +616,7 @@
         },
 
         onKeyUp: function()
-        {                
+        {
         },
 
         onKeyDown: function()
@@ -628,7 +628,7 @@
         },
 
         onMouseMove: function()
-        {                
+        {
         },
 
         onMouseDown: function()
@@ -658,17 +658,17 @@
             this._width = this.canvas.width;
             this._height = this.canvas.height;
 
-            if(isOldPIXI) 
+            if(isOldPIXI)
             {
                 this.requiresUpdate =  true;
-            } 
-            else 
+            }
+            else
             {
-                this.texture.baseTexture.dirty();
+                this.texture.baseTexture.update();
             }
         },
 
-        _renderWebGL: function(renderSession) 
+        _renderWebGL: function(renderSession)
         {
             if(isOldPIXI)
             {
@@ -699,12 +699,12 @@
 
     // define width
     Object.defineProperty(PIXI.InputObject.prototype, 'width', {
-        get: function() 
+        get: function()
         {
             this.update();
             return this.scale.x * this.texture.frame.width;
         },
-        set: function(value) 
+        set: function(value)
         {
             this.scale.x = value / this.texture.frame.width;
             this._width = value;
@@ -751,14 +751,14 @@
                 if(PIXI.InputObject.inputs[next] === scope)
                 {
                     break;
-                } 
+                }
                 else if(PIXI.InputObject.inputs[next].tabIndex !== -1)
                 {
                     scope.blur();
 
                     // maybe avoid the timeout?
-                    setTimeout(function() { 
-                        PIXI.InputObject.inputs[next].focus(); 
+                    setTimeout(function() {
+                        PIXI.InputObject.inputs[next].focus();
                     }, 10);
                     break;
                 }
@@ -900,7 +900,7 @@
         this.addChild(this.selection);
         this.addChild(this.text);
         this.addChild(this.cursor);
-        
+
         // set up events
         this.boundOnMouseUp = this.onMouseUp.bind(this);
         this.boundOnMouseUpOutside = this.onMouseUpOutside.bind(this);
@@ -938,10 +938,10 @@
                 this._textNeedsUpdate = true;
                 return;
             }
-          
+
             // set type
             this.hiddenInput.type = this.data.type || "text";
-            
+
             // check max length
             if (this.data.maxlength)
             {
@@ -1070,7 +1070,7 @@
                 this.data.value = text;
                 this._textNeedsUpdate = true;
             }
-            
+
             if(this.data.selection[0] !== this.hiddenInput.selectionStart || this.data.selection[1] !== this.hiddenInput.selectionEnd)
             {
                 this.data.selection[0] = this.hiddenInput.selectionStart;
@@ -1086,7 +1086,10 @@
         {
 
             // check primary condition
-            if(!this.data.hasFocus || !this.data.mouseDown || this.data.selectionStart < 0 || !this.stage.interactionManager.hitTest(this, e)) 
+            if(!this.data.hasFocus ||
+              !this.data.mouseDown ||
+              this.data.selectionStart < 0 ||
+              !this.containsPoint(e.data.global))
             {
                 return;
             }
@@ -1116,10 +1119,10 @@
 
         onMouseDown: function(e)
         {
-
-            if(e.originalEvent.which === 2 || e.originalEvent.which === 3)
+            var originalEvent = e.data.originalEvent;
+            if(originalEvent.which === 2 || originalEvent.which === 3)
             {
-                e.originalEvent.preventDefault();
+                originalEvent.preventDefault();
                 return;
             }
 
@@ -1153,9 +1156,10 @@
 
         onMouseUp: function(e)
         {
-            if(e.originalEvent.which === 2 || e.originalEvent.which === 3)
+            var originalEvent = e.data.originalEvent
+            if(originalEvent.which === 2 || originalEvent.which === 3)
             {
-                e.originalEvent.preventDefault();
+                originalEvent.preventDefault();
                 return;
             }
 
@@ -1194,7 +1198,7 @@
                     this.renderTexture();
                     this.data.dirty = false;
                 }
-                
+
                 if(this._textStyleNeedsUpdate)
                 {
                     this.text.setStyle(this.data.text);
@@ -1255,7 +1259,7 @@
             {
                 this.text.y = this.data.padding | 0;
             }
-            else if(this.data.valign === "middle") 
+            else if(this.data.valign === "middle")
             {
                 this.text.y = (this.data.textboxTop + ((this.data.textboxHeight - this.text.height)/2)) | 0;
             }
@@ -1320,15 +1324,15 @@
                 if(this.data.cursorPos > this.data.clipPos[1])
                 {
                     start = this.data.clipPos[0];
-                    value = value.substr(start, this.data.cursorPos - this.data.clipPos[0]) || "";  
-                } 
+                    value = value.substr(start, this.data.cursorPos - this.data.clipPos[0]) || "";
+                }
 
                 // cursor outside of view <- left
                 else if(this.data.cursorPos < this.data.clipPos[0])
                 {
                     start = this.data.cursorPos;
-                    value = value.substr(start) || "";                 
-                } 
+                    value = value.substr(start) || "";
+                }
 
                 // cursor inside of the view
                 else
@@ -1348,7 +1352,7 @@
             {
                 if(!this.text._isBitmapFont)
                 {
-                    var cache = this.textCache, 
+                    var cache = this.textCache,
                         character = "";
 
                     while(textWidth > width)
@@ -1460,7 +1464,7 @@
 
         mousePos: function(e)
         {
-            return e.getLocalPosition(e.target || this);
+            return e.data.getLocalPosition(e.target || this);
         },
 
         clearSelection: function()
@@ -1470,7 +1474,7 @@
                 this.data.cursorPos = 0;
                 this.data.selection[0] = 0;
                 this.data.selection[1] = 0;
-                
+
                 if(!isCocoonJS)
                 {
                     this.hiddenInput.selectionStart = 0;
@@ -1596,7 +1600,7 @@
         PIXI.InputObject.call(this, -1);
 
         this.addChild(this.text);
-        
+
         // set up events
         this.boundOnMouseUp = this.onMouseUp.bind(this);
         this.boundOnMouseUpOutside = this.onMouseUpOutside.bind(this);
@@ -1648,7 +1652,7 @@
                     this.renderTexture();
                     this.data.dirty = false;
                 }
-                
+
                 if(this._textStyleNeedsUpdate)
                 {
                     this.text.setStyle(this.data.text);
@@ -1795,7 +1799,7 @@
         this.addChild(this.text);
         this.addChild(this.menu);
         this.addChild(this.selection);
-        
+
         // set up events
         this.boundOnMouseUp = this.onMouseUp.bind(this);
         this.boundOnMouseUpOutside = this.onMouseUpOutside.bind(this);
@@ -1809,7 +1813,7 @@
         // add options
         var text = "";
         for(var index in this.data.options)
-        { 
+        {
             if(this.data.selected === index)
             {
                 this.selectedIndex = this.options.length;
@@ -1847,9 +1851,10 @@
 
         this.menu.mousedown = this.menu.touchstart = function(e)
         {
-            if(e.originalEvent.which === 2 || e.originalEvent.which === 3)
+            var originalEvnet = e.data.originalEvent;
+            if(originalEvent.which === 2 || originalEvent.which === 3)
             {
-                e.originalEvent.preventDefault();
+                originalEvent.preventDefault();
                 this.displayMenu(false);
                 return;
             }
@@ -1912,7 +1917,7 @@
             }
         },
 
-        updateSelection: function(index) 
+        updateSelection: function(index)
         {
             this.selection.y = this.menu.startY + this.lineHeight * (index !== undefined ? index : this.selectedIndex);
         },
@@ -1961,7 +1966,7 @@
                         this.selectedIndex = this.menu.selectedIndex;
                         this.menu.selectedIndex = null;
                         this.updateText();
-                    } 
+                    }
                 }
                 else
                 {
@@ -2059,7 +2064,7 @@
                     this.menu.anchor.y = 0;
                     this.menu.y = this.height - 1;
                 }
-            } 
+            }
             else
             {
                 this.menu.anchor.y = 0;
@@ -2090,7 +2095,7 @@
                     this.renderTexture();
                     this.data.dirty = false;
                 }
-                
+
                 if(this._textStyleNeedsUpdate)
                 {
                     this.text.setStyle(this.data.text);

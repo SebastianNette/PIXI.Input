@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>pixi UI example: Buttons with different themes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+    </style>
+    <script src="../lib/pixi.js"></script>
+    <script src="../src/pixi.input.js"></script>
+</head>
+
+<body>
+<script>
+    var stage = new PIXI.Container();
+
+    var renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0xffffff});
+    document.body.appendChild(renderer.view);
+
+    var input = new PIXI.Input();
+    stage.addChild(input);
+
+    requestAnimationFrame(animate);
+
+    function animate() {
+        // render the stage
+        renderer.render(stage);
+        requestAnimationFrame(animate);
+    }
+</script>
+
+</body>
+</html>
